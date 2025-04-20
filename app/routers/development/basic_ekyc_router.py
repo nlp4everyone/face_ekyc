@@ -12,7 +12,7 @@ from datetime import datetime
 # Config
 from app.core.config.constant import DEFAULT_MATCHING_THRESHOLD
 # Image model
-from app.utils.face.embedding import AdaFaceEmbedding
+from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
 from app.utils.face.recognition import MTCNNRecognition
 
 # ekyc router
@@ -24,7 +24,7 @@ async def face_compare(files: List[UploadFile] = File(...,
                                                       media_type = "image/png")):
     # Get model
     mtcnn : MTCNNRecognition = get_face_recognition_model()
-    ada_face : AdaFaceEmbedding = get_face_embedding_model()
+    face_embedding_model : TimmEmbedding = get_face_embedding_model()
     # Raise exception if not enough file
     if len(files) < 2: raise HTTPException(status_code = 400,
                                            detail = "Please provide at least 2 files")
@@ -51,14 +51,14 @@ async def face_compare(files: List[UploadFile] = File(...,
         faces_aligned = [BasicAlignment.align_face_5points(image = image,
                                                            landmarks = landmark)for (landmark, image) in zip(faces_landmark,images_numpy)]
         # Embedding
-        faces_embeddings = ada_face.embed(faces_aligned)
+        faces_embeddings = face_embedding_model.embed(faces_aligned)
         # Source embedding
         source_embedding, reference_embeddings = faces_embeddings[0], faces_embeddings[1:]
         # Calculate similarity
         similarities = calculate_similarity(source_embedding, reference_embeddings)
         return {"created_at": begin_time,
                 "similarities": similarities.tolist(),
-                "embedding_model": ada_face.model_name}
+                "embedding_model": face_embedding_model.model_name}
 
     except Exception as e:
         raise HTTPException(status_code = status.HTTP_409_CONFLICT,
@@ -71,7 +71,7 @@ async def face_matching(files: List[UploadFile] = File(...,
                         threshold :float = DEFAULT_MATCHING_THRESHOLD):
     # Get model
     mtcnn: MTCNNRecognition = get_face_recognition_model()
-    ada_face: AdaFaceEmbedding = get_face_embedding_model()
+    face_embedding_model: TimmEmbedding = get_face_embedding_model()
 
     # Raise exception if not enough file
     if len(files) != 2: raise HTTPException(status_code = 400,
@@ -99,14 +99,14 @@ async def face_matching(files: List[UploadFile] = File(...,
         faces_aligned = [BasicAlignment.align_face_5points(image = image,
                                                            landmarks = landmark)for (landmark, image) in zip(faces_landmark,images_numpy)]
         # Embedding
-        faces_embeddings = ada_face.embed(faces_aligned)
+        faces_embeddings = face_embedding_model.embed(faces_aligned)
         # Source embedding
         source_embedding, reference_embeddings = faces_embeddings[0], faces_embeddings[1:]
         # Calculate similarity
         similarities = calculate_similarity(source_embedding, reference_embeddings)
         return {"created_at": begin_time,
                 "matching": True if similarities.tolist()[0] > threshold else False,
-                "embedding_model": ada_face.model_name}
+                "embedding_model": face_embedding_model.model_name}
 
     except Exception as e:
         raise HTTPException(status_code = status.HTTP_409_CONFLICT,

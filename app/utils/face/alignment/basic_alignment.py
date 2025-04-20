@@ -63,8 +63,8 @@ class BasicAlignment:
 
     @staticmethod
     def align_face_5points(image: np.ndarray,
-                        landmarks: dict,
-                        output_size: tuple = (112, 112)) -> np.ndarray:
+                           landmarks: dict,
+                           output_size: tuple = (112, 112)) -> np.ndarray:
         """
         Align face using 5-point landmarks (left_eye, right_eye, nose, left_mouth, right_mouth).
 

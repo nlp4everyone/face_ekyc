@@ -1,28 +1,28 @@
 # init model
-from app.utils.face.embedding import AdaFaceEmbedding
+from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
 from app.utils.face.recognition import MTCNNRecognition
 from app.db.minio import MinioObjectStorage
 # Import config
 from app.core.config.constant import EMBEDDING_MODEL, MINIO_BUCKET_NAME
 from app.core.config import (HF_TOKEN,
                              MINIO_ACCESS_KEY,
-                             MINIO_SECRET_KEY,
-                             MINIO_PORT)
+                             MINIO_SECRET_KEY)
 
 # Variable
 mtcnn = None
-ada_face = None
+face_embedding_model = None
 minio_storage = None
 
 def init_models():
     """Start Postgres Connection"""
     global mtcnn
-    global ada_face
+    global face_embedding_model
     # Init connection
-    mtcnn = MTCNNRecognition()
-    ada_face = AdaFaceEmbedding(model_name = EMBEDDING_MODEL,
-                                HF_TOKEN = HF_TOKEN)
-    return mtcnn, ada_face
+    mtcnn = MTCNNRecognition(device = "cuda:0")
+    # face_embedding_model = AdaFaceEmbedding(model_name = EMBEDDING_MODEL,
+    #                                         HF_TOKEN = HF_TOKEN)
+    face_embedding_model = TimmEmbedding(device = "cuda")
+    return mtcnn, face_embedding_model
 
 def init_minio_storage():
     global minio_storage
@@ -32,7 +32,7 @@ def init_minio_storage():
                                        secret_key = MINIO_SECRET_KEY)
 
 def get_face_embedding_model():
-    return ada_face
+    return face_embedding_model
 
 def get_face_recognition_model():
     return mtcnn

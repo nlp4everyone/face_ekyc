@@ -10,7 +10,7 @@ from app.startup import (get_face_recognition_model,
 # Other components
 from datetime import datetime
 # Image model
-from app.utils.face.embedding import AdaFaceEmbedding
+from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
 from app.utils.face.recognition import MTCNNRecognition
 # Minio
 from app.db.minio import MinioObjectStorage
@@ -28,7 +28,7 @@ async def face_register(file: UploadFile = File(...)):
                             detail = "Uploaded files must be under image format!")
     # Get model
     mtcnn : MTCNNRecognition = get_face_recognition_model()
-    ada_face : AdaFaceEmbedding = get_face_embedding_model()
+    face_embedding_model : TimmEmbedding = get_face_embedding_model()
     # Minio
     minio_storage :MinioObjectStorage = get_minio_storage()
 
@@ -51,7 +51,7 @@ async def face_register(file: UploadFile = File(...)):
         # Get faces aligned
         face_aligned = BasicAlignment.align_face_5points(image = image_numpy, landmarks = face_landmark)
         # Embedding
-        face_embeddings = ada_face.embed(face_aligned)
+        face_embeddings = face_embedding_model.embed(face_aligned)
         # Upload image to minio
         minio_storage.upload_image(image = image_numpy, image_name = file.filename)
 

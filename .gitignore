@@ -13,3 +13,6 @@ app/utils/face/embedding/__pycache__
 app/utils/face/recognition/__pycache__
 app/utils/image/__pycache__
 app/db/minio/__pycache__/
+kennedy.jpg
+trump.jpg
+test.py
