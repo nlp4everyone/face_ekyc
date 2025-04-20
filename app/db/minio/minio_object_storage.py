@@ -27,12 +27,9 @@ class MinioObjectStorage:
     def list_buckets(self)-> List[Bucket]:
         return self._minio_service.list_buckets()
 
-    def is_bucket_existed(self) -> bool:
-        return True if self._minio_service.bucket_exists(self._bucket_name) else False
-
     def create_bucket(self,**kwargs):
         # Create bucket while not existed
-        if not self.is_bucket_existed():
+        if not self._minio_service.bucket_exists(self._bucket_name):
             self._minio_service.make_bucket(bucket_name = self._bucket_name,
                                             **kwargs)
     def upload_image(self,

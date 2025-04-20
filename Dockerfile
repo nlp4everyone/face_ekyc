@@ -33,8 +33,8 @@ WORKDIR /workspace
 # Run script when container starts
 # Copy and install
 COPY requirements.txt /workspace
+RUN pip install tensorflow==2.18.0
 RUN pip install -r requirements.txt
-
 # Install cudnn
 #RUN apt-get update -y && apt-get install -y python3 python3-pip libcudnn8 libcudnn8-dev
 

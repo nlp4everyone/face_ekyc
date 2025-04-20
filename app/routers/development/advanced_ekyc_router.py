@@ -14,6 +14,8 @@ from app.utils.face.embedding import AdaFaceEmbedding
 from app.utils.face.recognition import MTCNNRecognition
 # Minio
 from app.db.minio import MinioObjectStorage
+# Log
+from loggers import SystemLogger
 
 # ekyc router
 advanced_ekyc_router = APIRouter()
@@ -33,27 +35,25 @@ async def face_register(file: UploadFile = File(...)):
     # Define start time
     begin_time = datetime.now().strftime("%Y/%d/%m %H:%M:%S")
     # Read as bytes
-    images_byte = await file.read()
+    image_byte = await file.read()
     # Convert as numpy
-    images_numpy = ImagePreprocess.bytes_to_numpy(images_byte)
+    image_numpy = ImagePreprocess.bytes_to_numpy(image_byte)
 
     # Detecting face
-    face_detections = mtcnn.detect_faces(images_numpy)
-    if len(face_detections) == 0:
+    face_detection = mtcnn.detect_faces(image_numpy)
+    if len(face_detection) == 0:
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
                             detail = "No found face!")
 
     try:
         # Get landmarks
-        faces_landmark = [detection[0].get("keypoints") for detection in face_detections]
+        face_landmark = face_detection[0].get("keypoints")
         # Get faces aligned
-        faces_aligned = [BasicAlignment.align_face_5points(image = image,
-                                                           landmarks = landmark)for (landmark, image) in zip(faces_landmark,images_numpy)]
+        face_aligned = BasicAlignment.align_face_5points(image = image_numpy, landmarks = face_landmark)
         # Embedding
-        faces_embeddings = ada_face.embed(faces_aligned)
+        face_embeddings = ada_face.embed(face_aligned)
         # Upload image to minio
-        minio_storage.upload_image(image = images_numpy,
-                                   image_name = file.filename)
+        minio_storage.upload_image(image = image_numpy, image_name = file.filename)
 
     except Exception as e:
         raise HTTPException(status_code = status.HTTP_409_CONFLICT,

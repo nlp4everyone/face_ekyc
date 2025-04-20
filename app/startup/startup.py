@@ -26,7 +26,7 @@ def init_models():
 
 def init_minio_storage():
     global minio_storage
-    minio_storage = MinioObjectStorage(endpoint = f"minio:{MINIO_PORT}",
+    minio_storage = MinioObjectStorage(endpoint = "minio:9000",
                                        bucket_name = MINIO_BUCKET_NAME,
                                        access_key = MINIO_ACCESS_KEY,
                                        secret_key = MINIO_SECRET_KEY)
