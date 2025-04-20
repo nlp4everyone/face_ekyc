@@ -4,7 +4,7 @@ from qdrant_client.models import PointStruct, VectorParams, Distance
 from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 from qdrant_client.http.models.models import UpdateResult
 # Typing
-from typing import Union
+from typing import List
 import uuid
 # Face Request
 from app.core.schema import FaceRequest
@@ -40,6 +40,7 @@ class QdrantService:
 
     async def insert_face_embedding(self,
                                     face_request :FaceRequest) -> UpdateResult:
+        """Insert new face information to Qdrant Database"""
         # Define key field
         filter = Filter(
             must=[
@@ -73,6 +74,7 @@ class QdrantService:
 
     async def _get_point_id(self,
                             face_id :str):
+        """Get point information from defined field (face id)"""
         # Define the filter based on the payload condition
         payload_filter = Filter(
             must = [
@@ -90,6 +92,7 @@ class QdrantService:
 
     async def delete_point(self,
                            face_id :str):
+        """Delete specified point in Qdrant with field (face id)"""
         # Get point
         searched_point = await self._get_point_id(face_id)
         # Check if point valid
@@ -101,4 +104,20 @@ class QdrantService:
                                            points_selector = [searched_point.id])
         return searched_point.payload, result
 
+    async def retrieve_points(self,
+                              embedding :List[float],
+                              similarity_top_k :int = 3) ->List[dict]:
+        """Retrive similar point in Qdrant from inputing value"""
+        searched_results = await self._client.search(collection_name = self._collection_name,
+                                                     query_vector = embedding,
+                                                     limit = similarity_top_k)
 
+        # Retrieved points
+        retrieved_points = []
+        for result in searched_results:
+            temp_result = result.payload
+            # Upload key
+            temp_result.update({"score": result.score})
+            # Append to list
+            retrieved_points.append(temp_result)
+        return retrieved_points

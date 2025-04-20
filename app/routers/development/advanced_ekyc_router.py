@@ -22,6 +22,7 @@ from loggers import SystemLogger
 from app.core.schema import FaceRequest
 # Exception
 from app.core.exceptions import UserNotFoundException, UserExistedException
+from app.core.config.constant import DEFAULT_SIMILARITY_TOP_K
 
 # ekyc router
 advanced_ekyc_router = APIRouter()
@@ -115,3 +116,43 @@ async def face_delete(face_id :str):
     except UserNotFoundException as e:
         SystemLogger.error(f"Face id: {face_id} not found!")
         raise UserNotFoundException(user_id = face_id)
+
+@advanced_ekyc_router.post("/face_retrieve")
+async def face_retrieve(file: UploadFile = File(...),
+                        similarity_top_k :int = Form(DEFAULT_SIMILARITY_TOP_K)):
+    # Check file type
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
+                            detail = "Uploaded files must be under image format!")
+    # Qdrant
+    qdrant_service :QdrantService = get_qdrant_service()
+    # Get model
+    mtcnn: MTCNNRecognition = get_face_recognition_model()
+    face_embedding_model: TimmEmbedding = get_face_embedding_model()
+
+    # Read as bytes
+    image_byte = await file.read()
+    # Convert as numpy
+    image_numpy = ImagePreprocess.bytes_to_numpy(image_byte)
+
+    # Detecting face
+    face_detection = mtcnn.detect_faces(image_numpy)
+    if len(face_detection) == 0:
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
+                            detail = "No found face!")
+
+    # Get landmarks
+    face_landmark = face_detection[0].keypoints
+    # Get faces aligned
+    face_aligned = BasicAlignment.align_face_5points(image = image_numpy,
+                                                     landmarks = face_landmark)
+    # Embedding
+    face_embedding = face_embedding_model.embed(face_aligned)
+    # Convert embedding to list of float
+    face_vector = face_embedding.squeeze(0).tolist()
+    # Retrieve point
+    retrieve_points = await qdrant_service.retrieve_points(embedding = face_vector,
+                                                           similarity_top_k = similarity_top_k)
+    # Logging
+    SystemLogger.success(f"Retrieve total :{len(retrieve_points)} points")
+    return {"points": retrieve_points}
