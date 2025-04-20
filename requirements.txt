@@ -16,3 +16,4 @@ loguru==0.7.3
 #onnxruntime-gpu==1.21.0
 # For timm-face
 timm==1.0.14
+qdrant-client==1.12.2

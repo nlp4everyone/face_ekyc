@@ -31,11 +31,10 @@ RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
 # RUN pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu118
 
 WORKDIR /workspace
-# Copy and install
-COPY requirements.txt /workspace
-
 # Facenet Pytorch with multiple dependencies (Include Pytorch)
 RUN pip install facenet-pytorch==2.6.0
+# Copy and install
+COPY requirements.txt /workspace
 RUN pip install -r requirements.txt
 # Install cudnn
 #RUN apt-get update -y && apt-get install -y python3 python3-pip libcudnn8 libcudnn8-dev
