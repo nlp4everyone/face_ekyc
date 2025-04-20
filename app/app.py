@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 # Define route
 from .routers.development import (basic_ekyc_router,
-                                  preview_router)
+                                  preview_router,
+                                  advanced_ekyc_router)
 # Define startup
-from .startup import init_models
+from .startup import init_models, init_minio_storage
 # Components
 import time
 
@@ -24,6 +25,10 @@ app.include_router(preview_router,
 app.include_router(basic_ekyc_router,
                    prefix = "/development",
                    tags = [tags_metadata[0].get("name")])
+# Add advanced ekyc router
+app.include_router(advanced_ekyc_router,
+                   prefix = "/development",
+                   tags = [tags_metadata[0].get("name")])
 
 @app.on_event("startup")
 async def startup_event():
@@ -32,7 +37,7 @@ async def startup_event():
     # Init ml model
     init_models()
     # Init Minio
-
+    init_minio_storage()
     print(f"Start up done after: {round(time.perf_counter() - start,1)}s")
     # Logging
     # SystemLogger.info(f"Start up done after: {round(time.perf_counter() - start,1)}s")
