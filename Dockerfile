@@ -1,4 +1,5 @@
-FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04
+# FROM nvidia/cuda:11.8.0-runtime-ubuntu22.04
+FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu20.04
 
 # Set environment variables to avoid interactive prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -27,13 +28,14 @@ RUN ln -sf /usr/bin/python3.10 /usr/bin/python3 && \
 # Install pip for Python 3.11
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
 # Install pytorch
-RUN pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu118
+# RUN pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu118
 
 WORKDIR /workspace
-# Run script when container starts
 # Copy and install
 COPY requirements.txt /workspace
-RUN pip install tensorflow==2.18.0
+
+# Facenet Pytorch with multiple dependencies (Include Pytorch)
+RUN pip install facenet-pytorch==2.6.0
 RUN pip install -r requirements.txt
 # Install cudnn
 #RUN apt-get update -y && apt-get install -y python3 python3-pip libcudnn8 libcudnn8-dev
