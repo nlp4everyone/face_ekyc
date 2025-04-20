@@ -47,7 +47,7 @@ async def face_register(file: UploadFile = File(...)):
 
     try:
         # Get landmarks
-        face_landmark = face_detection[0].get("keypoints")
+        face_landmark = face_detection[0].keypoints
         # Get faces aligned
         face_aligned = BasicAlignment.align_face_5points(image = image_numpy, landmarks = face_landmark)
         # Embedding

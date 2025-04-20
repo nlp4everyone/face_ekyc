@@ -46,7 +46,7 @@ async def face_compare(files: List[UploadFile] = File(...,
 
     try:
         # Get landmarks
-        faces_landmark = [detection[0].get("keypoints") for detection in face_detections]
+        faces_landmark = [detection[0].keypoints for detection in face_detections]
         # Get faces aligned
         faces_aligned = [BasicAlignment.align_face_5points(image = image,
                                                            landmarks = landmark)for (landmark, image) in zip(faces_landmark,images_numpy)]
@@ -94,7 +94,7 @@ async def face_matching(files: List[UploadFile] = File(...,
 
     try:
         # Get landmarks
-        faces_landmark = [detection[0].get("keypoints") for detection in face_detections]
+        faces_landmark = [detection[0].keypoints for detection in face_detections]
         # Get faces aligned
         faces_aligned = [BasicAlignment.align_face_5points(image = image,
                                                            landmarks = landmark)for (landmark, image) in zip(faces_landmark,images_numpy)]

@@ -34,7 +34,7 @@ async def face_align(file: UploadFile = File(...)):
                             detail = "Face not found!")
     # Get detection
     detections = detections[0]
-    landmarks = detections.get("keypoints")
+    landmarks = detections.keypoints
     # Align image
     aligned_image = BasicAlignment.align_face_5points(image = images_numpy,
                                                       landmarks = landmarks)

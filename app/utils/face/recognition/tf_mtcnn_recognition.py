@@ -1,7 +1,10 @@
 from mtcnn import MTCNN
+# Typing
 import cv2
 import numpy as np
 from typing import Union, List
+# Base Recognition
+from .base_recognition import BaseRecognition, FaceDetection
 
 def convert_np(obj):
     if isinstance(obj, dict):
@@ -13,16 +16,17 @@ def convert_np(obj):
     else:
         return obj
 
-class MTCNNRecognition:
+class MTCNNRecognition(BaseRecognition):
     def __init__(self,
                  stages :str = "face_and_landmarks_detection",
                  device :str = "CPU:0"):
+        super().__init__()
         self._detector = MTCNN(stages = stages,
                                device = device)
 
     def detect_faces(self,
                      image :Union[str, np.ndarray],
-                     limit :int = 1):
+                     limit :int = 1) -> List[FaceDetection]:
         # Image path case
         if isinstance(image, str): image = cv2.imread(image)
         # Convert chanel from BGR to RGB
@@ -37,11 +41,11 @@ class MTCNNRecognition:
         if len(results) < limit:
             raise Exception(f"Limit: {limit} must be lower than len of input: {len(results)}")
         # Normalize input
-        return [convert_np(result) for result in results[:limit]]
+        return [FaceDetection.parse_obj(convert_np(result)) for result in results[:limit]]
 
     def batch_detect_faces(self,
                            images :List[np.ndarray],
-                           limit :int = 1):
+                           limit :int = 1) -> List[List[FaceDetection]]:
         # Detect
         results = self._detector.detect_faces(images)
 
@@ -54,5 +58,5 @@ class MTCNNRecognition:
 
         # Apply convert
         for i in range(len(results)):
-            results[i] = [convert_np(result) for result in results[i][:limit]]
+            results[i] = [FaceDetection.parse_obj(convert_np(result)) for result in results[i][:limit]]
         return results
