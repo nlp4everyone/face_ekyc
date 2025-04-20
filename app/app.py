@@ -29,7 +29,10 @@ app.include_router(basic_ekyc_router,
 async def startup_event():
     # Start
     start = time.perf_counter()
+    # Init ml model
     init_models()
+    # Init Minio
+
     print(f"Start up done after: {round(time.perf_counter() - start,1)}s")
     # Logging
     # SystemLogger.info(f"Start up done after: {round(time.perf_counter() - start,1)}s")

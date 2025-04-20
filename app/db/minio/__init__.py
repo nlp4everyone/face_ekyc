@@ -1,0 +1,1 @@
+from .minio_object_storage import MinioObjectStorage

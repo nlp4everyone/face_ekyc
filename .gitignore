@@ -11,3 +11,4 @@ app/utils/face/alignment/__pycache__
 app/utils/face/embedding/__pycache__
 app/utils/face/recognition/__pycache__
 app/utils/image/__pycache__
+app/db/minio/__pycache__/
