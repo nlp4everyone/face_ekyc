@@ -1,1 +1,1 @@
-from .qdrant_service import QdrantService, Distance, ApiException
+from .qdrant_service import QdrantService, Distance

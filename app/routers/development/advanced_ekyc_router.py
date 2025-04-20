@@ -15,11 +15,13 @@ from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
 from app.utils.face.recognition import MTCNNRecognition
 # Minio
 from app.db.minio import MinioObjectStorage
-from app.db.qdrant import QdrantService, ApiException
+from app.db.qdrant import QdrantService
 # Log
 from loggers import SystemLogger
 # Schema
 from app.core.schema import FaceRequest
+# Exception
+from app.core.exceptions import UserNotFoundException, UserExistedException
 
 # ekyc router
 advanced_ekyc_router = APIRouter()
@@ -59,7 +61,8 @@ async def face_register(face_id :str = Form(...),
         # Get landmarks
         face_landmark = face_detection[0].keypoints
         # Get faces aligned
-        face_aligned = BasicAlignment.align_face_5points(image = image_numpy, landmarks = face_landmark)
+        face_aligned = BasicAlignment.align_face_5points(image = image_numpy,
+                                                         landmarks = face_landmark)
         # Embedding
         face_embedding = face_embedding_model.embed(face_aligned)
 
@@ -69,22 +72,46 @@ async def face_register(face_id :str = Form(...),
         # Validate
         face_information = FaceRequest(embedding = face_vector,
                                        face_id = face_id,
-                                       face_name = face_name)
+                                       face_name = face_name,
+                                       image_name = file.filename)
         # Append to Qdrant
         inserted_result = await qdrant_service.insert_face_embedding(face_information)
         # Check status
         if inserted_result.status.COMPLETED == "completed":
-            SystemLogger.info("Add new face vector to Qdrant")
+            SystemLogger.success("Add new face vector to Qdrant")
 
         # Upload image to minio
-        minio_storage.upload_image(image = image_numpy, image_name = file.filename)
+        result = minio_storage.upload_image(image = image_numpy,
+                                            image_name = file.filename)
+
         # Return
         return {"status": "completed",
                 "face_id": face_id,
                 "face_name": face_name,
                 "url": ""}
-
-    except ApiException as e:
+    except UserExistedException as e:
         SystemLogger.error(f"Face id: {face_id} has existed!")
-        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
-                            detail = "Face has existed! Cannot insert.")
+        raise UserExistedException(user_id = face_id)
+
+@advanced_ekyc_router.delete("/face_delete")
+async def face_delete(face_id :str):
+    # Minio
+    minio_storage :MinioObjectStorage = get_minio_storage()
+    # Qdrant
+    qdrant_service :QdrantService = get_qdrant_service()
+
+    try:
+        # Delete object from Qdrant
+        deleted_point, deletion_status = await qdrant_service.delete_point(face_id = face_id)
+        SystemLogger.success(f"Remove face {face_id} from Qdrant")
+
+        # Remove object from Minio (If existed)
+        minio_storage.remove_image(deleted_point.get("image_name"))
+        SystemLogger.success(f"Remove face {face_id} from Minio")
+        return {
+            "status": "completed",
+            "face_id": face_id
+        }
+    except UserNotFoundException as e:
+        SystemLogger.error(f"Face id: {face_id} not found!")
+        raise UserNotFoundException(user_id = face_id)

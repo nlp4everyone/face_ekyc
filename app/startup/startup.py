@@ -46,10 +46,10 @@ def init_qdrant_service() -> QdrantService:
 def get_face_embedding_model():
     return face_embedding_model
 
-def get_face_recognition_model():
+def get_face_recognition_model() ->MTCNNRecognition:
     return mtcnn
 
-def get_minio_storage():
+def get_minio_storage() -> MinioObjectStorage:
     return minio_storage
 
 def get_qdrant_service() -> QdrantService:
