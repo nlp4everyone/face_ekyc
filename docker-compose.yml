@@ -11,6 +11,7 @@ services:
     container_name: web_face_ekyc
     depends_on:
       - minio
+      - qdrant
     ports:
       - "${FASTAPI_PORT}:8000"
     env_file:
@@ -44,8 +45,17 @@ services:
     volumes:
       - minio-data:/data
 
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "${QDRANT_PORT}:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
 volumes:
   web_data:
   hf_cache:
     driver: local
   minio-data:
+  qdrant_data:

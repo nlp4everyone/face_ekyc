@@ -4,9 +4,12 @@ from .routers.development import (basic_ekyc_router,
                                   preview_router,
                                   advanced_ekyc_router)
 # Define startup
-from .startup import init_models, init_minio_storage
+from .startup import (init_models,
+                      init_minio_storage,
+                      init_qdrant_service)
 # Components
 import time
+from loggers import SystemLogger
 
 # Tags
 tags_metadata = [
@@ -38,6 +41,11 @@ async def startup_event():
     init_models()
     # Init Minio
     init_minio_storage()
-    print(f"Start up done after: {round(time.perf_counter() - start,1)}s")
+    # Init qdrant
+    qdrant_service = init_qdrant_service()
+    await qdrant_service.create_collection()
+
+    # Measure time for processing
+    SystemLogger.success(f"Start up done after: {round(time.perf_counter() - start,1)}s")
     # Logging
     # SystemLogger.info(f"Start up done after: {round(time.perf_counter() - start,1)}s")
