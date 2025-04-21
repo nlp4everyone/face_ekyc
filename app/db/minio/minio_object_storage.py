@@ -7,7 +7,9 @@ from minio.helpers import ObjectWriteResult
 from typing import List, Union
 # Other component
 import numpy as np
-from .utils import convert_image_to_bytes
+from io import BytesIO
+# Image
+from app.utils.image import ImagePreprocess
 
 class MinioObjectStorage:
     def __init__(self,
@@ -38,7 +40,7 @@ class MinioObjectStorage:
                                             **kwargs)
 
     def upload_image(self,
-                     image :np.ndarray,
+                     image :Union[np.ndarray,BytesIO],
                      image_name :str,
                      **kwargs) -> Union[ObjectWriteResult,None]:
         """Upload the image to MinIO"""
@@ -46,14 +48,16 @@ class MinioObjectStorage:
         # When file existed!
         if self.file_exists(image_name):
             return None
-        # Convert image under numpy to bytes
-        image_bytes = convert_image_to_bytes(image)
+        # Convert to bytes if image is numpy array
+        if isinstance(image, np.ndarray):
+            # Convert image under numpy to bytes
+            image = ImagePreprocess.convert_image_to_bytes(image)
         # Upload to bucket
         result = self._minio_service.put_object(bucket_name = self._bucket_name,
                                                 object_name = image_name,
-                                                data = image_bytes,
-                                                length = image_bytes.getbuffer().nbytes,
-                                                content_type = "image/png",
+                                                data = image,
+                                                length = len(image.getvalue()) ,
+                                                content_type = "image/jpeg",
                                                 **kwargs)
         return result
 

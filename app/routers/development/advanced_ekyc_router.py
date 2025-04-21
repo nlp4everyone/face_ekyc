@@ -50,6 +50,9 @@ async def face_register(face_id :str = Form(...),
     image_byte = await file.read()
     # Convert as numpy
     image_numpy = ImagePreprocess.bytes_to_numpy(image_byte)
+    # Resized to fixed size image (Reducing time for processing)
+    image_numpy = ImagePreprocess.resize_image_keep_aspect_ratio(image_numpy,
+                                                                 fixed_width = 512)
 
     # Detecting face
     face_detection = mtcnn.detect_faces(image_numpy)
@@ -81,8 +84,11 @@ async def face_register(face_id :str = Form(...),
         if inserted_result.status.COMPLETED == "completed":
             SystemLogger.success("Add new face vector to Qdrant")
 
-        # Upload image to minio
-        result = minio_storage.upload_image(image = image_numpy,
+        # Upload image to minio (With compressed version of image)
+        compressed_image = ImagePreprocess.compress_image(image_numpy,
+                                                          quality = 70)
+        # Upload image
+        result = minio_storage.upload_image(image = compressed_image,
                                             image_name = file.filename)
 
         # Return
@@ -134,6 +140,9 @@ async def face_retrieve(file: UploadFile = File(...),
     image_byte = await file.read()
     # Convert as numpy
     image_numpy = ImagePreprocess.bytes_to_numpy(image_byte)
+    # Resized to fixed size image (Reducing time for processing)
+    image_numpy = ImagePreprocess.resize_image_keep_aspect_ratio(image_numpy,
+                                                                 fixed_width = 512)
 
     # Detecting face
     face_detection = mtcnn.detect_faces(image_numpy)
