@@ -7,6 +7,8 @@ from .routers.development import (basic_ekyc_router,
 from .startup import (init_models,
                       init_minio_storage,
                       init_qdrant_service)
+# Define middle ware
+from .core.middle_ware import TimerMiddleware
 # Components
 import time
 from loggers import SystemLogger
@@ -32,6 +34,9 @@ app.include_router(basic_ekyc_router,
 app.include_router(advanced_ekyc_router,
                    prefix = "/development",
                    tags = [tags_metadata[0].get("name")])
+
+# Add middleware
+app.add_middleware(TimerMiddleware)
 
 @app.on_event("startup")
 async def startup_event():
