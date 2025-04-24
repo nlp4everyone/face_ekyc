@@ -6,7 +6,7 @@ from .routers.development import (basic_ekyc_router,
 # Define startup
 from .startup import (init_models,
                       init_minio_storage,
-                      init_qdrant_service)
+                      init_elastic_search)
 # Define middle ware
 from .core.middle_ware import TimerMiddleware
 # Components
@@ -46,9 +46,9 @@ async def startup_event():
     init_models()
     # Init Minio
     init_minio_storage()
-    # Init qdrant
-    qdrant_service = init_qdrant_service()
-    await qdrant_service.create_collection()
+    # Init Elastic Search
+    es_service = init_elastic_search()
+    await es_service.create_index()
 
     # Measure time for processing
     SystemLogger.success(f"Start up done after: {round(time.perf_counter() - start,1)}s")

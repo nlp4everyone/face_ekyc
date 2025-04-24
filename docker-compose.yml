@@ -11,7 +11,7 @@ services:
     container_name: web_face_ekyc
     depends_on:
       - minio
-      - qdrant
+      - elasticsearch
     ports:
       - "${FASTAPI_PORT}:8000"
     env_file:
@@ -45,17 +45,32 @@ services:
     volumes:
       - minio-data:/data
 
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: qdrant
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ES_PASSWORD}
+      - node.name=es-node
     ports:
-      - "${QDRANT_PORT}:6333"
+      - "${ES_PORT}:9200"
     volumes:
-      - qdrant_data:/qdrant/storage
+      - esdata:/usr/share/elasticsearch/data
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.1
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "${KIBANA_PORT}:5601"
+    depends_on:
+      - elasticsearch
 volumes:
   web_data:
   hf_cache:
     driver: local
   minio-data:
-  qdrant_data:
+  esdata:
+    driver: local

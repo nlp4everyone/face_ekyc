@@ -7,7 +7,7 @@ from app.utils.face.alignment import BasicAlignment
 from app.startup import (get_face_recognition_model,
                          get_face_embedding_model,
                          get_minio_storage,
-                         get_qdrant_service)
+                         get_elastic_search)
 # Other components
 from datetime import datetime
 # Image model
@@ -15,7 +15,7 @@ from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
 from app.utils.face.recognition import MTCNNRecognition
 # Minio
 from app.db.minio import MinioObjectStorage
-from app.db.qdrant import QdrantService
+from app.db.elastic_search import ElasticSearchService
 # Log
 from loggers import SystemLogger
 # Schema
@@ -42,7 +42,7 @@ async def face_register(face_id :str = Form(...),
     # Minio
     minio_storage :MinioObjectStorage = get_minio_storage()
     # Qdrant
-    qdrant_service = get_qdrant_service()
+    es_service = get_elastic_search()
 
     # Define start time
     begin_time = datetime.now().strftime("%Y/%d/%m %H:%M:%S")
@@ -79,10 +79,7 @@ async def face_register(face_id :str = Form(...),
                                        face_name = face_name,
                                        image_name = file.filename)
         # Append to Qdrant
-        inserted_result = await qdrant_service.insert_face_embedding(face_information)
-        # Check status
-        if inserted_result.status.COMPLETED == "completed":
-            SystemLogger.success("Add new face vector to Qdrant")
+        inserted_result = await es_service.insert_face_embedding(face_information)
 
         # Upload image to minio (With compressed version of image)
         compressed_image = ImagePreprocess.compress_image(image_numpy,
@@ -100,28 +97,28 @@ async def face_register(face_id :str = Form(...),
         SystemLogger.error(f"Face id: {face_id} has existed!")
         raise UserExistedException(user_id = face_id)
 
-@advanced_ekyc_router.delete("/face_delete")
-async def face_delete(face_id :str):
-    # Minio
-    minio_storage :MinioObjectStorage = get_minio_storage()
-    # Qdrant
-    qdrant_service :QdrantService = get_qdrant_service()
-
-    try:
-        # Delete object from Qdrant
-        deleted_point, deletion_status = await qdrant_service.delete_point(face_id = face_id)
-        SystemLogger.success(f"Remove face {face_id} from Qdrant")
-
-        # Remove object from Minio (If existed)
-        minio_storage.remove_image(deleted_point.get("image_name"))
-        SystemLogger.success(f"Remove face {face_id} from Minio")
-        return {
-            "status": "completed",
-            "face_id": face_id
-        }
-    except UserNotFoundException as e:
-        SystemLogger.error(f"Face id: {face_id} not found!")
-        raise UserNotFoundException(user_id = face_id)
+# @advanced_ekyc_router.delete("/face_delete")
+# async def face_delete(face_id :str):
+#     # Minio
+#     minio_storage :MinioObjectStorage = get_minio_storage()
+#     # Elastic Search
+#     es_service :ElasticSearchService = get_elastic_search()
+#
+#     try:
+#         # Delete object from Qdrant
+#         deleted_point, deletion_status = await qdrant_service.delete_point(face_id = face_id)
+#         SystemLogger.success(f"Remove face {face_id} from Qdrant")
+#
+#         # Remove object from Minio (If existed)
+#         minio_storage.remove_image(deleted_point.get("image_name"))
+#         SystemLogger.success(f"Remove face {face_id} from Minio")
+#         return {
+#             "status": "completed",
+#             "face_id": face_id
+#         }
+#     except UserNotFoundException as e:
+#         SystemLogger.error(f"Face id: {face_id} not found!")
+#         raise UserNotFoundException(user_id = face_id)
 
 @advanced_ekyc_router.post("/face_retrieve")
 async def face_retrieve(file: UploadFile = File(...),
@@ -130,8 +127,8 @@ async def face_retrieve(file: UploadFile = File(...),
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
                             detail = "Uploaded files must be under image format!")
-    # Qdrant
-    qdrant_service :QdrantService = get_qdrant_service()
+    # Elastic Search
+    es_service :ElasticSearchService = get_elastic_search()
     # Get model
     mtcnn: MTCNNRecognition = get_face_recognition_model()
     face_embedding_model: TimmEmbedding = get_face_embedding_model()
@@ -160,8 +157,8 @@ async def face_retrieve(file: UploadFile = File(...),
     # Convert embedding to list of float
     face_vector = face_embedding.squeeze(0).tolist()
     # Retrieve point
-    retrieve_points = await qdrant_service.retrieve_points(embedding = face_vector,
-                                                           similarity_top_k = similarity_top_k)
+    retrieve_points = await es_service.retrieve_points(embedding = face_vector,
+                                                       similarity_top_k = similarity_top_k)
     # Logging
     SystemLogger.success(f"Retrieve total :{len(retrieve_points)} points")
     return {"points": retrieve_points}

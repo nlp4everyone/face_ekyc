@@ -4,5 +4,5 @@ from .startup import (get_face_embedding_model,
                       get_face_recognition_model,
                       init_minio_storage,
                       get_minio_storage,
-                      init_qdrant_service,
-                      get_qdrant_service)
+                      init_elastic_search,
+                      get_elastic_search)
