@@ -2,5 +2,6 @@ EMBEDDING_MODEL = "minchul/cvlface_adaface_ir101_webface12m"
 DEFAULT_MATCHING_THRESHOLD = 0.6
 FACE_EMBEDDING_DIMS = 512
 DEFAULT_SIMILARITY_TOP_K = 3
+EMBEDDING_COLLECTION_NAME = "face_embeddings"
 # Storage
 MINIO_BUCKET_NAME = "raw-images"
