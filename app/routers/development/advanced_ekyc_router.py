@@ -81,21 +81,22 @@ async def face_register(face_id :str = Form(...),
         # Append to Qdrant
         inserted_result = await qdrant_service.insert_face_embedding(face_information)
         # Check status
-        if inserted_result.status.COMPLETED == "completed":
-            SystemLogger.success("Add new face vector to Qdrant")
+        if inserted_result.status == "FAILED":
+            # Logging
+            SystemLogger.error("Failed to add face to Qdrant")
+            raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
+                                detail = "Failed to add face to Qdrant")
 
+        # Logging
+        SystemLogger.success("Add new face vector to Qdrant")
         # Upload image to minio (With compressed version of image)
         compressed_image = ImagePreprocess.compress_image(image_numpy,
                                                           quality = 70)
         # Upload image
         result = await minio_storage.aupload_image(image = compressed_image,
                                                    image_name = file.filename)
-
         # Return
-        return {"status": "completed",
-                "face_id": face_id,
-                "face_name": face_name,
-                "url": ""}
+        return inserted_result
     except UserExistedException as e:
         SystemLogger.error(f"Face id: {face_id} has existed!")
         raise UserExistedException(user_id = face_id)
@@ -109,18 +110,15 @@ async def face_delete(face_id :str):
 
     try:
         # Delete object from Qdrant
-        deleted_point, deletion_status = await qdrant_service.delete_point(face_id = face_id)
+        response = await qdrant_service.delete_point(face_id = face_id)
         SystemLogger.success(f"Remove face {face_id} from Qdrant")
 
         # Remove object from Minio (If existed)
-        await minio_storage.aremove_image(deleted_point.get("image_name"))
+        await minio_storage.aremove_image(response.data.get("image_name"))
         # Logging
         SystemLogger.success(f"Remove face {face_id} from Minio")
         # Return
-        return {
-            "status": "completed",
-            "face_id": face_id
-        }
+        return response
     except UserNotFoundException as e:
         SystemLogger.error(f"Face id: {face_id} not found!")
         raise UserNotFoundException(user_id = face_id)
@@ -161,9 +159,9 @@ async def face_retrieve(file: UploadFile = File(...),
     face_embedding = face_embedding_model.embed(face_aligned)
     # Convert embedding to list of float
     face_vector = face_embedding.squeeze(0).tolist()
+    # Logging
+    SystemLogger.success(f"Trying to create retrieved request: ...")
     # Retrieve point
     retrieve_points = await qdrant_service.retrieve_points(embedding = face_vector,
                                                            similarity_top_k = similarity_top_k)
-    # Logging
-    SystemLogger.success(f"Retrieve total :{len(retrieve_points)} points")
     return {"points": retrieve_points}
