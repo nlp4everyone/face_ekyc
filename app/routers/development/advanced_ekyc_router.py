@@ -97,28 +97,27 @@ async def face_register(face_id :str = Form(...),
         SystemLogger.error(f"Face id: {face_id} has existed!")
         raise UserExistedException(user_id = face_id)
 
-# @advanced_ekyc_router.delete("/face_delete")
-# async def face_delete(face_id :str):
-#     # Minio
-#     minio_storage :MinioObjectStorage = get_minio_storage()
-#     # Elastic Search
-#     es_service :ElasticSearchService = get_elastic_search()
-#
-#     try:
-#         # Delete object from Qdrant
-#         deleted_point, deletion_status = await qdrant_service.delete_point(face_id = face_id)
-#         SystemLogger.success(f"Remove face {face_id} from Qdrant")
-#
-#         # Remove object from Minio (If existed)
-#         minio_storage.remove_image(deleted_point.get("image_name"))
-#         SystemLogger.success(f"Remove face {face_id} from Minio")
-#         return {
-#             "status": "completed",
-#             "face_id": face_id
-#         }
-#     except UserNotFoundException as e:
-#         SystemLogger.error(f"Face id: {face_id} not found!")
-#         raise UserNotFoundException(user_id = face_id)
+@advanced_ekyc_router.delete("/face_delete")
+async def face_delete(face_id :str):
+    # Minio
+    minio_storage :MinioObjectStorage = get_minio_storage()
+    # Elastic Search
+    es_service :ElasticSearchService = get_elastic_search()
+
+    try:
+        # Delete object from Qdrant
+        searched_point, response = await es_service.delete_point(face_id = face_id)
+
+        # Remove object from Minio (If existed)
+        # minio_storage.remove_image(deleted_point.get("image_name"))
+        SystemLogger.success(f"Remove face {face_id} from Minio")
+        return {
+            "status": "completed",
+            "face_id": face_id
+        }
+    except UserNotFoundException as e:
+        SystemLogger.error(f"Face id: {face_id} not found!")
+        raise UserNotFoundException(user_id = face_id)
 
 @advanced_ekyc_router.post("/face_retrieve")
 async def face_retrieve(file: UploadFile = File(...),

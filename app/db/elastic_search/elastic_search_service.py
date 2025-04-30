@@ -77,18 +77,43 @@ class ElasticSearchService:
             # Search
             response = await self._client.search(index = self._index_name,
                                                  body=query)
+            results = []
             # Return response
             if response and "hits" in response and "hits" in response["hits"]:
-                results = []
                 for hit in response["hits"]["hits"]:
                     # Get payload value
                     source = hit["_source"]
+                    # Score
+                    score = dict(hit).get("_score")
                     payload = source.get("payload")
+
                     # Append to list
                     if payload is not None: results.append(payload)
-                return results
+            return results
         except NotFoundError:
             return []
+
+    async def delete_point(self, face_id: str):
+        """Delete point from collection"""
+        query = {
+            "query": {
+                "term": {
+                    "payload.face_id.keyword": face_id
+                }
+            }
+        }
+        # Searched point
+        searched_point = await self._client.search(index = self._index_name,
+                                                   body = query,
+                                                   size = 1)
+        # When document not existed
+        if searched_point["hits"]["total"]["value"] == 0:
+            # Raise exception
+            pass
+        # Delete documents matching the query
+        response = await self._client.delete_by_query(index = self._index_name,
+                                                      body = query)
+        return searched_point, response
 
     async def close_connection(self):
         await self._client.close()
