@@ -88,8 +88,8 @@ async def face_register(face_id :str = Form(...),
         compressed_image = ImagePreprocess.compress_image(image_numpy,
                                                           quality = 70)
         # Upload image
-        result = minio_storage.upload_image(image = compressed_image,
-                                            image_name = file.filename)
+        result = await minio_storage.aupload_image(image = compressed_image,
+                                                   image_name = file.filename)
 
         # Return
         return {"status": "completed",
@@ -113,8 +113,10 @@ async def face_delete(face_id :str):
         SystemLogger.success(f"Remove face {face_id} from Qdrant")
 
         # Remove object from Minio (If existed)
-        minio_storage.remove_image(deleted_point.get("image_name"))
+        await minio_storage.aremove_image(deleted_point.get("image_name"))
+        # Logging
         SystemLogger.success(f"Remove face {face_id} from Minio")
+        # Return
         return {
             "status": "completed",
             "face_id": face_id

@@ -8,6 +8,7 @@ from typing import List, Union
 # Other component
 import numpy as np
 from io import BytesIO
+import asyncio
 # Image
 from app.utils.image import ImagePreprocess
 
@@ -61,6 +62,14 @@ class MinioObjectStorage:
                                                 **kwargs)
         return result
 
+    async def aupload_image(self,
+                            image: Union[np.ndarray, BytesIO],
+                            image_name: str,
+                            **kwargs):
+        """Asynchronous upload the image to MinIO"""
+        result = await asyncio.to_thread(self.upload_image,image,image_name,**kwargs)
+        return result
+
     def file_exists(self,
                     obj_name :str):
         """Check whether object existed in bucket or not"""
@@ -70,8 +79,7 @@ class MinioObjectStorage:
         except S3Error as err:
             return False
 
-    def remove_image(self,
-                     image_name :str):
+    def remove_image(self, image_name :str):
         """Check image existed before removing"""
         if self.file_exists(image_name):
             # Delete the object
@@ -79,3 +87,8 @@ class MinioObjectStorage:
                 self._minio_service.remove_object(self._bucket_name, image_name)
             except S3Error as err:
                 print("Error occurred while deleting object:", err)
+
+    async def aremove_image(self, image_name :str):
+        """Asynchronous check image existed before removing"""
+        result = await asyncio.to_thread(self.remove_image, image_name)
+        return result
