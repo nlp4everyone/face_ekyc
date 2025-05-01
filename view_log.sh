@@ -1,0 +1,1 @@
+docker logs web_face_ekyc
