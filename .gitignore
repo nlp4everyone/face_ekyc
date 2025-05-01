@@ -16,3 +16,4 @@ app/db/minio/__pycache__/
 kennedy.jpg
 trump.jpg
 test.py
+app/db/qdrant/qdrant_service.py
