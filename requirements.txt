@@ -18,3 +18,4 @@ loguru==0.7.3
 timm==1.0.14
 elasticsearch==8.13.2
 aiohttp==3.11.11
+StrEnum==0.4.14
