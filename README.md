@@ -27,4 +27,5 @@ bash build_docker.sh
 - 📂 Containerization: Docker
 - 🖥️ Web Framework: FastAPI
 - 🗃️ Vector Store: Qdrant
+- 🐥 RPS (Request Per Second): Currently, with my baseline setup, with NVIDIA 3060, this system reach approximately 33RPS ( Consumes nearly 6GB VRAM)
 <br />
