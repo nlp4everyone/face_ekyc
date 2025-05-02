@@ -15,4 +15,4 @@ app/utils/image/__pycache__
 app/db/minio/__pycache__/
 kennedy.jpg
 trump.jpg
-test.py
+images

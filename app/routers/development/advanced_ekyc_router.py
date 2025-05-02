@@ -21,7 +21,9 @@ from loggers import SystemLogger
 # Schema
 from app.core.schema import FaceRequest
 # Exception
-from app.core.exceptions import UserNotFoundException, UserExistedException
+from app.core.exceptions import (UserNotFoundException,
+                                 UserExistedException,
+                                 FaceNotFoundException)
 from app.core.config.constant import DEFAULT_SIMILARITY_TOP_K
 
 # ekyc router
@@ -54,13 +56,11 @@ async def face_register(face_id :str = Form(...),
     image_numpy = ImagePreprocess.resize_image_keep_aspect_ratio(image_numpy,
                                                                  fixed_width = 512)
 
-    # Detecting face
-    face_detection = mtcnn.detect_faces(image_numpy)
-    if len(face_detection) == 0:
-        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
-                            detail = "No found face!")
-
     try:
+        # Detecting face
+        face_detection = mtcnn.detect_faces(image_numpy)
+
+        # Logging
         SystemLogger.info("Trying add new face to database: ...")
         # Get landmarks
         face_landmark = face_detection[0].keypoints
@@ -100,6 +100,9 @@ async def face_register(face_id :str = Form(...),
     except UserExistedException as e:
         SystemLogger.error(f"Face id: {face_id} has existed!")
         raise UserExistedException(user_id = face_id)
+    except FaceNotFoundException as e:
+        SystemLogger.error(f"Cannot found face")
+        raise FaceNotFoundException()
 
 @advanced_ekyc_router.delete("/face_delete")
 async def face_delete(face_id :str):

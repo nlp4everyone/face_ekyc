@@ -4,6 +4,7 @@ from .base_recognition import BaseRecognition, FaceDetection
 # Other component
 from typing import Literal, Union, List
 import numpy as np
+from app.core.exceptions import FaceNotFoundException
 
 class MTCNNRecognition(BaseRecognition):
     def __init__(self,
@@ -20,6 +21,10 @@ class MTCNNRecognition(BaseRecognition):
                      limit: int = 1) -> List[FaceDetection]:
         # Detect
         boxes, probs, landmarks = self._detector.detect(image, landmarks = True)
+        # Raise exceptions while not found face
+        if boxes is None or probs is None:
+            raise FaceNotFoundException()
+
         predictions = []
         # Iterate each
         for (box, prob, landmark) in zip(boxes, probs, landmarks):
