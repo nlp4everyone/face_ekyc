@@ -8,8 +8,6 @@ from app.utils.face.alignment import BasicAlignment
 from io import BytesIO
 # Startup
 from app.startup import get_face_recognition_model
-# Image model
-from app.utils.face.recognition import MTCNNRecognition
 # Components
 import cv2
 # Define route
@@ -21,8 +19,7 @@ async def face_align(file: UploadFile = File(...)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Uploaded files must be under image format!")
     # Get model
-    mtcnn: MTCNNRecognition = get_face_recognition_model()
-
+    mtcnn = get_face_recognition_model()
     # Load file
     file_content = await file.read()
     images_numpy = ImagePreprocess.bytes_to_numpy(file_content)

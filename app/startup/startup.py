@@ -1,6 +1,6 @@
 # init model
-from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
-from app.utils.face.recognition import MTCNNRecognition
+# from app.utils.face.embedding.torch import AdaFaceEmbedding, TimmEmbedding
+from app.utils.face.recognition.tf import MTCNNRecognition
 # Define service
 from app.db.minio import MinioObjectStorage
 from app.db.qdrant import QdrantService, Distance
@@ -23,10 +23,9 @@ def init_models():
     global mtcnn
     global face_embedding_model
     # Init connection
-    mtcnn = MTCNNRecognition(device = "cuda:0")
+    mtcnn = MTCNNRecognition(device = "GPU:0")
     # face_embedding_model = AdaFaceEmbedding(model_name = EMBEDDING_MODEL,
     #                                         HF_TOKEN = HF_TOKEN)
-    face_embedding_model = TimmEmbedding(device = "cuda")
     return mtcnn, face_embedding_model
 
 def init_minio_storage():

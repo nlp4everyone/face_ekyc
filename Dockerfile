@@ -27,12 +27,10 @@ RUN ln -sf /usr/bin/python3.10 /usr/bin/python3 && \
 
 # Install pip for Python 3.11
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
-# Install pytorch
-# RUN pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu118
 
 WORKDIR /workspace
-# Facenet Pytorch with multiple dependencies (Include Pytorch)
-RUN pip install facenet-pytorch==2.6.0
+# Install tensorflow
+RUN pip install tensorflow==2.13.1
 # Copy and install
 COPY requirements.txt /workspace
 RUN pip install -r requirements.txt

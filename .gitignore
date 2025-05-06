@@ -17,3 +17,6 @@ app/db/minio/__pycache__/
 kennedy.jpg
 trump.jpg
 images
+README_backup.md
+prometheus/
+test.py

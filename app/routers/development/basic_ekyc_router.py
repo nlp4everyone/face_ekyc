@@ -4,16 +4,13 @@ from typing import List
 # Image component
 from app.utils.image import ImagePreprocess
 from app.utils.face.alignment import BasicAlignment
-from app.utils.face.embedding import  calculate_similarity
+from app.utils.face.embedding.utils import calculate_similarity
 # Startup
 from app.startup import get_face_recognition_model, get_face_embedding_model
 # Other components
 from datetime import datetime
 # Config
 from app.core.config.constant import DEFAULT_MATCHING_THRESHOLD
-# Image model
-from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
-from app.utils.face.recognition import MTCNNRecognition
 
 # ekyc router
 basic_ekyc_router = APIRouter()
@@ -23,8 +20,8 @@ async def face_compare(files: List[UploadFile] = File(...,
                                                       description = "Upload images for comparison. First image is source, the rest is reference",
                                                       media_type = "image/png")):
     # Get model
-    mtcnn : MTCNNRecognition = get_face_recognition_model()
-    face_embedding_model : TimmEmbedding = get_face_embedding_model()
+    mtcnn = get_face_recognition_model()
+    face_embedding_model = get_face_embedding_model()
     # Raise exception if not enough file
     if len(files) < 2: raise HTTPException(status_code = 400,
                                            detail = "Please provide at least 2 files")
@@ -70,8 +67,8 @@ async def face_matching(files: List[UploadFile] = File(...,
                                                        media_type = "image/png"),
                         threshold :float = DEFAULT_MATCHING_THRESHOLD):
     # Get model
-    mtcnn: MTCNNRecognition = get_face_recognition_model()
-    face_embedding_model: TimmEmbedding = get_face_embedding_model()
+    mtcnn = get_face_recognition_model()
+    face_embedding_model = get_face_embedding_model()
 
     # Raise exception if not enough file
     if len(files) != 2: raise HTTPException(status_code = 400,

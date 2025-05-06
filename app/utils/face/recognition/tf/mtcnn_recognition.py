@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from typing import Union, List
 # Base Recognition
-from .base_recognition import BaseRecognition, FaceDetection
+from app.utils.face.recognition import BaseRecognition, FaceDetection
 
 def convert_np(obj):
     if isinstance(obj, dict):

@@ -1,6 +1,5 @@
 import numpy as np
-import cv2, torch
-from torchvision import transforms
+import cv2
 from io import BytesIO
 
 class ImagePreprocess:
@@ -17,13 +16,6 @@ class ImagePreprocess:
         # Step 4: Prepare image bytes to upload
         return BytesIO(encoded_image.tobytes())
 
-    @staticmethod
-    def convert_numpy_to_torch(bgr_image :np.ndarray) ->torch.Tensor:
-        # Convert BGR to RGB
-        rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-        # Convert the image to a PyTorch tensor
-        transform = transforms.ToTensor()
-        return transform(rgb_image)
 
     @staticmethod
     def resize_image_keep_aspect_ratio(image: np.ndarray,

@@ -10,12 +10,6 @@ from app.startup import (get_face_recognition_model,
                          get_qdrant_service)
 # Other components
 from datetime import datetime
-# Image model
-from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
-from app.utils.face.recognition import MTCNNRecognition
-# Minio
-from app.db.minio import MinioObjectStorage
-from app.db.qdrant import QdrantService
 # Log
 from loggers import SystemLogger
 # Schema
@@ -39,10 +33,10 @@ async def face_register(face_id :str = Form(...),
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
                             detail = "Uploaded files must be under image format!")
     # Get model
-    mtcnn : MTCNNRecognition = get_face_recognition_model()
-    face_embedding_model : TimmEmbedding = get_face_embedding_model()
+    mtcnn = get_face_recognition_model()
+    face_embedding_model = get_face_embedding_model()
     # Minio
-    minio_storage :MinioObjectStorage = get_minio_storage()
+    minio_storage = get_minio_storage()
     # Qdrant
     qdrant_service = get_qdrant_service()
 
@@ -107,9 +101,9 @@ async def face_register(face_id :str = Form(...),
 @advanced_ekyc_router.delete("/face_delete")
 async def face_delete(face_id :str):
     # Minio
-    minio_storage :MinioObjectStorage = get_minio_storage()
+    minio_storage = get_minio_storage()
     # Qdrant
-    qdrant_service :QdrantService = get_qdrant_service()
+    qdrant_service = get_qdrant_service()
 
     try:
         # Delete object from Qdrant
@@ -134,10 +128,10 @@ async def face_retrieve(file: UploadFile = File(...),
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
                             detail = "Uploaded files must be under image format!")
     # Qdrant
-    qdrant_service :QdrantService = get_qdrant_service()
+    qdrant_service = get_qdrant_service()
     # Get model
-    mtcnn: MTCNNRecognition = get_face_recognition_model()
-    face_embedding_model: TimmEmbedding = get_face_embedding_model()
+    mtcnn = get_face_recognition_model()
+    face_embedding_model = get_face_embedding_model()
 
     # Read as bytes
     image_byte = await file.read()
