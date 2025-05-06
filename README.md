@@ -22,6 +22,10 @@ cp .env.sample .env
 ```
 bash build_docker.sh
 ```
+5. Testing with locust:
+```
+locust -f testing/measure_load.py --host=http://0.0.0.0:8990
+```
 
 # 📃 Intergrations:
 - 📂 Containerization: Docker
@@ -29,3 +33,7 @@ bash build_docker.sh
 - 🗃️ Vector Store: Qdrant
 - 🐥 RPS (Request Per Second): Currently, with my baseline setup, with NVIDIA 3060, this system reach approximately 33RPS ( Consumes nearly 6GB VRAM)
 <br />
+
+# ⭐ Long-term features:
+- 🌀 For commerce purpose: Providing APIs as API-token service, with expiration duration and revokcation plus long-term persistence (Postgres). Also, setup Rate-Limiter to restrict requests at time. 
+- ⏰ For authentication APIs: use OAuth2PasswordBearer

@@ -40,9 +40,9 @@ RUN pip install -r requirements.txt
 #RUN apt-get update -y && apt-get install -y python3 python3-pip libcudnn8 libcudnn8-dev
 
 # Set CUDA paths
-ENV LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
-ENV PATH=/usr/local/cuda-11.8/bin:$PATH
-ENV CUDA_HOME=/usr/local/cuda-11.8
+ENV LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64:$LD_LIBRARY_PATH
+ENV PATH=/usr/local/cuda-12.3/bin:$PATH
+ENV CUDA_HOME=/usr/local/cuda-12.3
 
 # Copy the rest
 COPY . /workspace
