@@ -32,6 +32,12 @@ locust -f testing/measure_load.py --host=http://0.0.0.0:8990
 - 🖥️ Web Framework: FastAPI
 - 🗃️ Vector Store: Qdrant
 - 🐥 RPS (Request Per Second): Currently, with my baseline setup, with NVIDIA 3060, this system reach approximately 33RPS ( Consumes nearly 6GB VRAM)
+- 🎮 Model: Face Detection 🤫 (Mtcnn), Face Embedding 🤗 (ArcFace, AdaFace)
+<br />
+
+# 📔 Related Reference:
+- 📖 ArcFace: https://arxiv.org/pdf/1801.07698
+- 📖 AdaFace: https://arxiv.org/pdf/2204.00964
 <br />
 
 # ⭐ Long-term features:
