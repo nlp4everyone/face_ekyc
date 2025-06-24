@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 # Define route
-from .routers.development import (basic_ekyc_router,
-                                  preview_router,
-                                  advanced_ekyc_router)
+from .routers.development import preview_router
+from .routers import ekyc_router
 # Define startup
 from .startup import (init_models,
                       init_minio_storage,
@@ -18,6 +17,10 @@ tags_metadata = [
     {
         "name": "Development",
         "description": "Contain features such as face alignment, face comparison for development step",
+    },
+    {
+        "name": "Ekyc",
+        "description": "Contain features for ekyc-related function for using in production",
     }
 ]
 # Define app
@@ -26,14 +29,10 @@ app = FastAPI(openapi_tags = tags_metadata)
 app.include_router(preview_router,
                    prefix = "/development",
                    tags = [tags_metadata[0].get("name")])
-# Add basic ekyc router
-app.include_router(basic_ekyc_router,
-                   prefix = "/development",
-                   tags = [tags_metadata[0].get("name")])
 # Add advanced ekyc router
-app.include_router(advanced_ekyc_router,
-                   prefix = "/development",
-                   tags = [tags_metadata[0].get("name")])
+app.include_router(ekyc_router,
+                   prefix = "/api",
+                   tags = [tags_metadata[1].get("name")])
 
 # Add middleware
 app.add_middleware(TimerMiddleware)

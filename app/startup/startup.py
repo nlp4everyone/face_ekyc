@@ -17,16 +17,16 @@ def init_models():
     """Start Postgres Connection"""
     global face_detector
     global face_embedding_model
-    # Init connection
-    face_detector = BatchFaceDetector(gpu_id=-1)
-    face_embedding_model = None
-    # face_embedding_model = TimmEmbedding(device = "cpu")
+    # Face detector
+    face_detector = BatchFaceDetector(gpu_id=0)
+    # Face embedding
+    face_embedding_model = TimmEmbedding(device = "cuda")
     return face_detector, face_embedding_model
 
 def init_minio_storage():
     global minio_storage
     # minio
-    minio_storage = MinioObjectStorage(endpoint = "localhost:9000",
+    minio_storage = MinioObjectStorage(endpoint = "minio:9000",
                                        bucket_name = MINIO_BUCKET_NAME,
                                        access_key = MINIO_ACCESS_KEY,
                                        secret_key = MINIO_SECRET_KEY)
@@ -34,7 +34,7 @@ def init_minio_storage():
 def init_qdrant_service() -> QdrantService:
     global qdrant_service
     # qdrant
-    qdrant_service = QdrantService(host = "localhost",
+    qdrant_service = QdrantService(host = "qdrant",
                                    embedding_dims = FACE_EMBEDDING_DIMS,
                                    distance = Distance.COSINE)
     return qdrant_service
