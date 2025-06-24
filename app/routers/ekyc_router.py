@@ -28,7 +28,7 @@ async def face_register(face_id :str = Form(...),
                         file: UploadFile = File(...)):
     # Check file type
     if not file.content_type.startswith("image/"):
-        raise ImageTypeException()
+        raise MediafileUnsupportedException()
     # Get model
     face_detector = get_face_recognition_model()
     face_embedding_model = get_face_embedding_model()
@@ -104,7 +104,7 @@ async def face_retrieve(file: UploadFile = File(...),
                         similarity_top_k :int = Form(DEFAULT_SIMILARITY_TOP_K)):
     # Check file type
     if not file.content_type.startswith("image/"):
-        raise ImageTypeException()
+        raise MediafileUnsupportedException()
     # Qdrant
     qdrant_service = get_qdrant_service()
     # Get model
@@ -122,25 +122,28 @@ async def face_retrieve(file: UploadFile = File(...),
     image_numpy = ImagePreprocess.resize_image_keep_aspect_ratio(image_numpy,
                                                                  fixed_width = 512)
 
-    # Detecting face
-    face_detection = face_detector.detect_faces(image_numpy)
-    if len(face_detection) == 0:
-        raise FaceNotFoundException()
-    # Get landmarks
-    face_landmark = face_detection[0].keypoints
-    # Get faces aligned
-    face_aligned = BasicAlignment.align_face_5points(image = image_numpy,
-                                                     landmarks = face_landmark)
-    # Embedding
-    face_embedding = face_embedding_model.embed(face_aligned)
-    # Convert embedding to list of float
-    face_vector = face_embedding.squeeze(0).tolist()
-    # Logging
-    SystemLogger.success(f"Trying to create retrieved request: ...")
-    # Retrieve point
-    retrieve_points = await qdrant_service.retrieve_points(embedding = face_vector,
-                                                           similarity_top_k = similarity_top_k)
-    return {"points": retrieve_points}
+    try:
+        # Detecting face
+        face_detection = face_detector.detect_faces([image_numpy])
+        if len(face_detection) == 0:
+            raise FaceNotFoundException()
+        # Get landmarks
+        face_landmark = face_detection[0].keypoints
+        # Get faces aligned
+        face_aligned = BasicAlignment.align_face_5points(image = image_numpy,
+                                                         landmarks = face_landmark)
+        # Embedding
+        face_embedding = face_embedding_model.embed(face_aligned)
+        # Convert embedding to list of float
+        face_vector = face_embedding.squeeze(0).tolist()
+        # Logging
+        SystemLogger.success(f"Trying to create retrieved request: ...")
+        # Retrieve point
+        retrieve_points = await qdrant_service.retrieve_points(embedding = face_vector,
+                                                               similarity_top_k = similarity_top_k)
+        return {"points": retrieve_points}
+    except:
+        pass
 
 @ekyc_router.delete("/face_delete")
 async def face_delete(face_id :str):

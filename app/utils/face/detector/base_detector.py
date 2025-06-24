@@ -6,6 +6,14 @@ class FaceDetection(BaseModel):
     confidence :Optional[float] = None
     keypoints :Optional[dict] = None
 
+class FacialKeyPoints(BaseModel):
+    left_eye :Optional[List[float]] = None
+    right_eye:Optional[List[float]] = None
+    nose: Optional[List[float]] = None
+    left_mouth: Optional[List[float]] = None
+    right_mouth: Optional[List[float]] = None
+    chin: Optional[List[float]] = None
+
 class BaseDetector:
     def __init__(self):
         pass

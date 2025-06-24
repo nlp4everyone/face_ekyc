@@ -15,11 +15,17 @@ TIMM_MODEL = Literal["hf_hub:gaunernst/vit_small_patch8_gap_112.cosface_ms1mv3",
 class TimmEmbedding:
     def __init__(self,
                  model_name :TIMM_MODEL = "hf_hub:gaunernst/vit_small_patch8_gap_112.cosface_ms1mv3",
-                 device :Literal["cpu","cuda"] = "cuda"):
+                 device :Literal["cpu","cuda"] = "cuda",
+                 cache_dir :str = "/.cache/huggingface"):
         # Define device
         self._device = device
         self._model_name = model_name
-        self._model = timm.create_model(model_name, pretrained=True).eval().to(self._device)
+        self._cache_dir = cache_dir
+
+        # Model
+        self._model = timm.create_model(model_name,
+                                        pretrained = True,
+                                        cache_dir = self._cache_dir).eval().to(self._device)
 
     @property
     def model_name(self):
