@@ -11,9 +11,15 @@ app/utils/__pycache__
 app/utils/face/__pycache__
 app/utils/face/alignment/__pycache__
 app/utils/face/embedding/__pycache__
-app/utils/face/recognition/__pycache__
-app/utils/image/__pycache__
+app/utils/face/detector/__pycache__
+app/utils/image/
+app/core/exceptions/__pycache__/
+app/core/middle_ware/__pycache__/
+app/core/schema/__pycache__/
+app/core/vector_store/__pycache__/
+app/db/qdrant/__pycache__/
 app/db/minio/__pycache__/
+minio-data
 kennedy.jpg
 trump.jpg
 images
