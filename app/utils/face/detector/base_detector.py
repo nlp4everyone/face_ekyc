@@ -6,7 +6,7 @@ class FaceDetection(BaseModel):
     confidence :Optional[float] = None
     keypoints :Optional[dict] = None
 
-class BaseRecognition:
+class BaseDetector:
     def __init__(self):
         pass
 

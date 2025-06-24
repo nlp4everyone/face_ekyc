@@ -23,6 +23,7 @@ services:
     volumes:
       - web_data:/data/web
       - hf_cache:/.cache/huggingface
+      - model-cache:/root/.cache/torch/hub/checkpoints
     deploy:
       resources:
         reservations:
@@ -59,3 +60,5 @@ volumes:
     driver: local
   minio-data:
   qdrant_data:
+  model-cache:
+    driver: local

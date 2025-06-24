@@ -1,12 +1,12 @@
 from facenet_pytorch import MTCNN
 # Base Recognition
-from .base_recognition import BaseRecognition, FaceDetection
+from .base_detector import BaseDetector, FaceDetection
 # Other component
 from typing import Literal, Union, List
 import numpy as np
 from app.core.exceptions import FaceNotFoundException
 
-class MTCNNRecognition(BaseRecognition):
+class MTCNNDetector(BaseDetector):
     def __init__(self,
                  device :Union[Literal["cpu","cuda:0"],str] = "cpu"):
         super().__init__()
@@ -38,8 +38,8 @@ class MTCNNRecognition(BaseRecognition):
                                              keypoints = {"left_eye": landmark[0],
                                                           "right_eye": landmark[1],
                                                           "nose": landmark[2],
-                                                          "mouth_left": landmark[3],
-                                                          "mouth_right": landmark[4]}))
+                                                          "left_mouth": landmark[3],
+                                                          "right_mouth": landmark[4]}))
         return predictions
 
     def batch_detect_faces(self,

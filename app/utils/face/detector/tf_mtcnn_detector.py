@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from typing import Union, List
 # Base Recognition
-from .base_recognition import BaseRecognition, FaceDetection
+from .base_detector import BaseDetector, FaceDetection
 
 def convert_np(obj):
     if isinstance(obj, dict):
@@ -16,7 +16,7 @@ def convert_np(obj):
     else:
         return obj
 
-class MTCNNRecognition(BaseRecognition):
+class MTCNNDetector(BaseDetector):
     def __init__(self,
                  stages :str = "face_and_landmarks_detection",
                  device :str = "CPU:0"):

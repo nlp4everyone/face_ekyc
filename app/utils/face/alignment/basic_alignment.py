@@ -6,16 +6,16 @@ from pydantic import Field, BaseModel
 
 # Define landmark
 class ThreePointsLandmark(BaseModel):
-    left_eye :list[int] = Field(min_length=2, max_length=2)
-    right_eye :list[int] = Field(min_length=2, max_length=2)
-    nose :list[int] = Field(min_length=2, max_length=2)
+    left_eye :list[float] = Field(min_length=2, max_length=2)
+    right_eye :list[float] = Field(min_length=2, max_length=2)
+    nose :list[float] = Field(min_length=2, max_length=2)
 
 class FivePointsLandmark(BaseModel):
-    left_eye :list[int] = Field(min_length=2, max_length=2)
-    right_eye :list[int] = Field(min_length=2, max_length=2)
-    nose :list[int] = Field(min_length=2, max_length=2)
-    mouth_left: list[int] = Field(min_length=2, max_length=2)
-    mouth_right: list[int] = Field(min_length=2, max_length=2)
+    left_eye :list[float] = Field(min_length=2, max_length=2)
+    right_eye :list[float] = Field(min_length=2, max_length=2)
+    nose :list[float] = Field(min_length=2, max_length=2)
+    left_mouth: list[float] = Field(min_length=2, max_length=2)
+    right_mouth: list[float] = Field(min_length=2, max_length=2)
 
 class BasicAlignment:
     @staticmethod
@@ -96,8 +96,8 @@ class BasicAlignment:
         src_5pts = np.array([desired_landmark.left_eye,
                              desired_landmark.right_eye,
                              desired_landmark.nose,
-                             desired_landmark.mouth_left,
-                             desired_landmark.mouth_right], dtype = np.float32)
+                             desired_landmark.left_mouth,
+                             desired_landmark.right_mouth], dtype = np.float32)
 
         # Compute similarity transform (full affine with scaling and rotation)
         M, _ = cv2.estimateAffinePartial2D(src_5pts, ref_5pts, method = cv2.LMEDS)

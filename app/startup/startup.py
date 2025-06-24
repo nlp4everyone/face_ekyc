@@ -1,6 +1,6 @@
 # init model
 from app.utils.face.embedding import AdaFaceEmbedding, TimmEmbedding
-from app.utils.face.recognition import MTCNNRecognition
+from app.utils.face.detector import BatchFaceDetector, BaseDetector
 # Define service
 from app.db.minio import MinioObjectStorage
 from app.db.qdrant import QdrantService, Distance
@@ -11,34 +11,30 @@ from app.core.config.constant import (EMBEDDING_MODEL,
 from app.core.config import (HF_TOKEN,
                              MINIO_ACCESS_KEY,
                              MINIO_SECRET_KEY)
-
-# Variable
-mtcnn = None
-face_embedding_model = None
-minio_storage = None
-qdrant_service = None
+face_detector = None
 
 def init_models():
     """Start Postgres Connection"""
-    global mtcnn
+    global face_detector
     global face_embedding_model
     # Init connection
-    mtcnn = MTCNNRecognition(device = "cuda:0")
-    # face_embedding_model = AdaFaceEmbedding(model_name = EMBEDDING_MODEL,
-    #                                         HF_TOKEN = HF_TOKEN)
-    face_embedding_model = TimmEmbedding(device = "cuda")
-    return mtcnn, face_embedding_model
+    face_detector = BatchFaceDetector(gpu_id=-1)
+    face_embedding_model = None
+    # face_embedding_model = TimmEmbedding(device = "cpu")
+    return face_detector, face_embedding_model
 
 def init_minio_storage():
     global minio_storage
-    minio_storage = MinioObjectStorage(endpoint = "minio:9000",
+    # minio
+    minio_storage = MinioObjectStorage(endpoint = "localhost:9000",
                                        bucket_name = MINIO_BUCKET_NAME,
                                        access_key = MINIO_ACCESS_KEY,
                                        secret_key = MINIO_SECRET_KEY)
 
 def init_qdrant_service() -> QdrantService:
     global qdrant_service
-    qdrant_service = QdrantService(host = "qdrant",
+    # qdrant
+    qdrant_service = QdrantService(host = "localhost",
                                    embedding_dims = FACE_EMBEDDING_DIMS,
                                    distance = Distance.COSINE)
     return qdrant_service
@@ -46,8 +42,8 @@ def init_qdrant_service() -> QdrantService:
 def get_face_embedding_model():
     return face_embedding_model
 
-def get_face_recognition_model() ->MTCNNRecognition:
-    return mtcnn
+def get_face_recognition_model() ->BatchFaceDetector:
+    return face_detector
 
 def get_minio_storage() -> MinioObjectStorage:
     return minio_storage
