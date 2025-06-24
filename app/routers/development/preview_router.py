@@ -8,8 +8,10 @@ from app.utils.face.alignment import BasicAlignment
 from io import BytesIO
 # Startup
 from app.startup import get_face_recognition_model
-# Image model
-from app.utils.face.recognition import MTCNNRecognition
+# Exception
+from app.core.exceptions import *
+# Logger
+from loggers import SystemLogger
 # Components
 import cv2
 # Define route
@@ -18,20 +20,23 @@ preview_router = APIRouter()
 @preview_router.post("/face_align")
 async def face_align(file: UploadFile = File(...)):
     if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Uploaded files must be under image format!")
+        raise ImageTypeException()
     # Get model
-    mtcnn: MTCNNRecognition = get_face_recognition_model()
+    face_detector = get_face_recognition_model()
+    # Check model
+    if face_detector is None:
+        raise FaceDetectorUnavailableException()
 
     # Load file
     file_content = await file.read()
     images_numpy = ImagePreprocess.bytes_to_numpy(file_content)
     # Get face
-    detections = mtcnn.detect_faces(images_numpy)
+    detections = face_detector.detect_faces([images_numpy])
     # When face existed
-    if len(detections)  == 0:
-        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,
-                            detail = "Face not found!")
+    if len(detections) == 0:
+        SystemLogger.warning("Cannot detect face from image")
+        raise FaceNotFoundException()
+
     # Get detection
     detections = detections[0]
     landmarks = detections.keypoints
